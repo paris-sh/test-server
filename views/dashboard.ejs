@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="dashboard-layout">
+    <aside class="sidebar">
+      <h2>Profile</h2>
+      <div class="profile-card">
+        <p class="profile-label">Username</p>
+        <h3><%= user.displayName || user.username %></h3>
+        <p class="profile-meta">Email: <%= user.username %></p>
+        <a class="sidebar-link" href="/logout">Logout</a>
+      </div>
+    </aside>
+
+    <section class="dashboard-main">
+      <div class="dashboard-header">
+        <h1>Dashboard</h1>
+        <a class="button-link" href="/">Open Calculator</a>
+      </div>
+
+      <section class="stats-panel">
+        <div>
+          <p class="stat-label">Total Calculations</p>
+          <h2><%= stats.total %></h2>
+        </div>
+        <div>
+          <p class="stat-label">Recent Result</p>
+          <h2><%= stats.latest ? stats.latest.result : '-' %></h2>
+        </div>
+      </section>
+
+      <section class="history-panel">
+        <h2>Recent Activity</h2>
+        <% if (history.length === 0) { %>
+          <p>No calculations yet.</p>
+        <% } else { %>
+          <ul>
+            <% history.forEach(item => { %>
+              <li>
+                <span><%= item.expression %></span>
+                <strong><%= item.result %></strong>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
