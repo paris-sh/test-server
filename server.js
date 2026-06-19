@@ -13,6 +13,9 @@ const swaggerUi = require('swagger-ui-express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/calculator';
+const googleAuthEnabled = Boolean(
+  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+);
 
 const swaggerOptions = {
   definition: {
@@ -43,6 +46,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use((req, res, next) => {
   res.locals.user = req.user || null;
+  res.locals.googleAuthEnabled = googleAuthEnabled;
   next();
 });
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -101,7 +105,7 @@ passport.use(
   })
 );
 
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+if (googleAuthEnabled) {
   passport.use(
     new GoogleStrategy(
       {
@@ -397,20 +401,30 @@ app.get('/logout', (req, res, next) => {
   });
 });
 
-app.get(
-  '/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
+if (googleAuthEnabled) {
+  app.get(
+    '/auth/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+  );
 
-app.get(
-  '/auth/google/callback',
-  passport.authenticate('google', {
-    failureRedirect: '/login?error=google',
-  }),
-  (req, res) => {
-    res.redirect('/');
-  }
-);
+  app.get(
+    '/auth/google/callback',
+    passport.authenticate('google', {
+      failureRedirect: '/login?error=google',
+    }),
+    (req, res) => {
+      res.redirect('/');
+    }
+  );
+} else {
+  app.get('/auth/google', (req, res) => {
+    res.status(503).send('Google login is not configured.');
+  });
+
+  app.get('/auth/google/callback', (req, res) => {
+    res.status(503).send('Google login is not configured.');
+  });
+}
 
 /**
  * @openapi
