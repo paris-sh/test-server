@@ -5,7 +5,8 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-/* const GoogleStrategy = require('passport-google-oauth20').Strategy; */
+// Google OAuth is disabled for deployment by default.
+// const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bcrypt = require('bcryptjs');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
@@ -13,9 +14,9 @@ const swaggerUi = require('swagger-ui-express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/calculator';
-/* const googleAuthEnabled = Boolean(
+const googleAuthEnabled = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
-); */
+);
 
 const swaggerOptions = {
   definition: {
@@ -46,7 +47,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use((req, res, next) => {
   res.locals.user = req.user || null;
- /*  res.locals.googleAuthEnabled = googleAuthEnabled; */
+  res.locals.googleAuthEnabled = googleAuthEnabled;
   next();
 });
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -55,7 +56,7 @@ const userSchema = new mongoose.Schema(
   {
     username: { type: String, required: true, unique: true, trim: true, lowercase: true },
     password: { type: String },
-  /*   googleId: { type: String, unique: true, sparse: true }, */
+    googleId: { type: String, unique: true, sparse: true },
     displayName: { type: String },
   },
   { timestamps: true }
@@ -105,44 +106,46 @@ passport.use(
   })
 );
 
-/* if (googleAuthEnabled) {
-  passport.use(
-    new GoogleStrategy(
-      {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback',
-      },
-      async (accessToken, refreshToken, profile, done) => {
-        try {
-          const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
-          let user = await User.findOne({ googleId: profile.id });
-
-          if (!user && email) {
-            user = await User.findOne({ username: email.toLowerCase() });
-          }
-
-          if (!user) {
-            const username = email || `google-${profile.id}`;
-            user = await User.create({
-              username,
-              googleId: profile.id,
-              displayName: profile.displayName,
-            });
-          } else if (!user.googleId) {
-            user.googleId = profile.id;
-            user.displayName = user.displayName || profile.displayName;
-            await user.save();
-          }
-
-          done(null, user);
-        } catch (error) {
-          done(error);
-        }
-      }
-    )
-  );
-} */
+// Google OAuth setup is commented out for deployment.
+// Uncomment and configure the environment variables when Google login is needed.
+// if (googleAuthEnabled) {
+//   passport.use(
+//     new GoogleStrategy(
+//       {
+//         clientID: process.env.GOOGLE_CLIENT_ID,
+//         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//         callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback',
+//       },
+//       async (accessToken, refreshToken, profile, done) => {
+//         try {
+//           const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+//           let user = await User.findOne({ googleId: profile.id });
+//
+//           if (!user && email) {
+//             user = await User.findOne({ username: email.toLowerCase() });
+//           }
+//
+//           if (!user) {
+//             const username = email || `google-${profile.id}`;
+//             user = await User.create({
+//               username,
+//               googleId: profile.id,
+//               displayName: profile.displayName,
+//             });
+//           } else if (!user.googleId) {
+//             user.googleId = profile.id;
+//             user.displayName = user.displayName || profile.displayName;
+//             await user.save();
+//           }
+//
+//           done(null, user);
+//         } catch (error) {
+//           done(error);
+//         }
+//       }
+//     )
+//   );
+// }
 
 function isValidExpression(value) {
   return /^[0-9+\-*/().\s]+$/.test(value);
@@ -401,30 +404,32 @@ app.get('/logout', (req, res, next) => {
   });
 });
 
-if (googleAuthEnabled) {
-  app.get(
-    '/auth/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
-  );
-
-  app.get(
-    '/auth/google/callback',
-    passport.authenticate('google', {
-      failureRedirect: '/login?error=google',
-    }),
-    (req, res) => {
-      res.redirect('/');
-    }
-  );
-} else {
-  app.get('/auth/google', (req, res) => {
-    res.status(503).send('Google login is not configured.');
-  });
-
-  app.get('/auth/google/callback', (req, res) => {
-    res.status(503).send('Google login is not configured.');
-  });
-}
+// Google OAuth routes are disabled for deployment.
+// Uncomment these routes only when Google login is configured.
+// if (googleAuthEnabled) {
+//   app.get(
+//     '/auth/google',
+//     passport.authenticate('google', { scope: ['profile', 'email'] })
+//   );
+//
+//   app.get(
+//     '/auth/google/callback',
+//     passport.authenticate('google', {
+//       failureRedirect: '/login?error=google',
+//     }),
+//     (req, res) => {
+//       res.redirect('/');
+//     }
+//   );
+// } else {
+//   app.get('/auth/google', (req, res) => {
+//     res.status(503).send('Google login is not configured.');
+//   });
+//
+//   app.get('/auth/google/callback', (req, res) => {
+//     res.status(503).send('Google login is not configured.');
+//   });
+// }
 
 /**
  * @openapi
