@@ -7,23 +7,45 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <main class="auth-page">
-    <section class="auth-card">
-      <h1>Login</h1>
-      <% if (error) { %>
-        <p class="error-message"><%= error %></p>
-      <% } %>
-      <form action="/login" method="POST" class="auth-form">
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-      </form>
-      <p class="auth-links">
-        <a href="/register">Create account</a>
-      </p>
-      <% if (googleAuthEnabled) { %>
-        <a class="google-button" href="/auth/google">Sign in with Google</a>
-      <% } %>
+  <main class="login-shell">
+    <section class="login-panel">
+      <div class="login-visual">
+        <div class="visual-badge">CALC</div>
+        <h2>Welcome back</h2>
+        <p>Track your calculations, save results, and stay in control of your workflow.</p>
+        <div class="visual-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      <div class="login-form-panel">
+        <div>
+          <p class="eyebrow">Account access</p>
+          <h1>Sign in</h1>
+        </div>
+        <% if (error) { %>
+          <p class="error-message"><%= error %></p>
+        <% } %>
+        <form action="/login" method="POST" class="auth-form">
+          <label>
+            <span>Username</span>
+            <input type="text" name="username" placeholder="Enter your username" required>
+          </label>
+          <label>
+            <span>Password</span>
+            <input type="password" name="password" placeholder="Enter your password" required>
+          </label>
+          <button type="submit">Login</button>
+        </form>
+        <% if (googleAuthEnabled) { %>
+          <a class="google-button" href="/auth/google">Continue with Google</a>
+        <% } %>
+        <p class="auth-links">
+          Don’t have an account?
+          <a href="/register">Create one</a>
+        </p>
+      </div>
     </section>
   </main>
 </body>
